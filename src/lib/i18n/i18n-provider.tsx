@@ -16,19 +16,24 @@ export const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en');
+  const disableLocalStorage = process.env.NEXT_PUBLIC_DISABLE_LOCAL_STORAGE === 'true';
 
   useEffect(() => {
-    const savedLocale = localStorage.getItem('locale') as Locale | null;
-    if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar')) {
-      setLocaleState(savedLocale);
-      document.documentElement.lang = savedLocale;
-      document.documentElement.dir = savedLocale === 'ar' ? 'rtl' : 'ltr';
+    if (typeof window !== 'undefined' && !disableLocalStorage) {
+      const savedLocale = localStorage.getItem('locale') as Locale | null;
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar')) {
+        setLocaleState(savedLocale);
+        document.documentElement.lang = savedLocale;
+        document.documentElement.dir = savedLocale === 'ar' ? 'rtl' : 'ltr';
+      }
     }
   }, []);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
-    localStorage.setItem('locale', newLocale);
+    if (typeof window !== 'undefined' && !disableLocalStorage) {
+      localStorage.setItem('locale', newLocale);
+    }
     document.documentElement.lang = newLocale;
     document.documentElement.dir = newLocale === 'ar' ? 'rtl' : 'ltr';
   };
